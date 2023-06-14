@@ -71,8 +71,13 @@ func (c *rpmCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 
 func (c *rpmCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
+	var err error
 
-	err := client.RunCommandAndParse("show services rpm probe-results", &x)
+	if client.IsNetconfEnabled() {
+		err = client.RunCommandAndParse("<get-probe-results></get-probe-results>", &x)
+	} else {
+		err = client.RunCommandAndParse("show services rpm probe-results", &x)
+	}
 	if err != nil {
 		return err
 	}
