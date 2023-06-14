@@ -172,13 +172,18 @@ func (c *interfaceCollector) Collect(client collector.Client, ch chan<- promethe
 
 func (c *interfaceCollector) interfaceStats(client collector.Client) ([]*interfaceStats, error) {
 	var x = result{}
-	err := client.RunCommandAndParse("show interfaces extensive", &x)
+	var err error
+	if client.IsNetconfEnabled() {
+		err = client.RunCommandAndParse("<get-interface-information><extensive/></get-interface-information>", &x)
+	} else {
+		err = client.RunCommandAndParse("show interfaces extensive", &x)
+	}
 	if err != nil {
 		return nil, err
 	}
 
 	stats := make([]*interfaceStats, 0)
-	for _, phy := range x.Information.Interfaces {
+	for _, phy := range x.Interfaces {
 		s := &interfaceStats{
 			IsPhysical:              true,
 			Name:                    phy.Name,

@@ -2,10 +2,13 @@
 
 package alarm
 
+import (
+	"encoding/xml"
+)
+
 type result struct {
-	Information struct {
-		Details []details `xml:"alarm-detail"`
-	} `xml:"alarm-information"`
+	XMLName xml.Name `xml:"alarm-information"`
+	Details []details `xml:"alarm-detail"`
 }
 
 type details struct {

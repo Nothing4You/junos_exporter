@@ -74,9 +74,18 @@ func (c *alarmCollector) alarmCounter(client collector.Client) (*alarmCounter, *
 	red := 0
 	yellow := 0
 
-	cmds := []string{
-		"show system alarms",
-		"show chassis alarms",
+	var cmds []string
+
+	if client.IsNetconfEnabled() {
+		cmds = []string{
+			"<get-system-alarm-information></get-system-alarm-information>",
+			"<get-alarm-information></get-alarm-information>",
+		}
+	} else {
+		cmds = []string{
+			"show system alarms",
+			"show chassis alarms",
+		}
 	}
 
 	var alarms []details
@@ -89,7 +98,7 @@ func (c *alarmCollector) alarmCounter(client collector.Client) (*alarmCounter, *
 			return nil, nil, err
 		}
 
-		for _, d := range a.Information.Details {
+		for _, d := range a.Details {
 			if _, found := messages[d.Description]; found {
 				continue
 			}
