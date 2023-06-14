@@ -165,14 +165,21 @@ func (*routingEngineCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect collects metrics from JunOS
 func (c *routingEngineCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = multiEngineResult{}
-	err := client.RunCommandAndParseWithParser("show chassis routing-engine", func(b []byte) error {
-		return parseXML(b, &x)
-	})
+	var err error
+	if client.IsNetconfEnabled() {
+		err = client.RunCommandAndParseWithParser("<get-route-engine-information/>", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+	} else {
+		err = client.RunCommandAndParseWithParser("show chassis routing-engine", func(b []byte) error {
+			return parseXML(b, &x)
+		})
+	}
 	if err != nil {
 		return err
 	}
 
-	for _, re := range x.Results.RoutingEngines {
+	for _, re := range x.RoutingEngines {
 		labelValues := append(labelValues, re.Name)
 		for _, engine := range re.Information.RouteEngines {
 			c.collectForSlot(engine, ch, labelValues)
@@ -279,7 +286,7 @@ func parseXML(b []byte, res *multiEngineResult) error {
 		return err
 	}
 
-	res.Results.RoutingEngines = []routingEngine{
+	res.RoutingEngines = []routingEngine{
 		{
 			Name:        "N/A",
 			Information: fi.Information,

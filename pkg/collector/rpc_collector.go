@@ -20,6 +20,8 @@ type Client interface {
 	// IsSatelliteEnabled returns if sattelite features are enabled on the device
 	IsSatelliteEnabled() bool
 
+	IsNetconfEnabled() bool
+
 	// Device returns device information for the connected device
 	Device() *connector.Device
 

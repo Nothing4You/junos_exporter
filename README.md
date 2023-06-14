@@ -166,6 +166,8 @@ devices:
 # Optional
 # interface_description_regex: '\[([^=\]]+)(=[^\]]+)?\]'
 features:
+  netconf: true
+
   alarm: true
   environment: true
   bgp: true

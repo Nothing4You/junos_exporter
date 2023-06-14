@@ -102,7 +102,7 @@ func deviceInterfaceRegex(host string) *regexp.Regexp {
 }
 
 func clientForDevice(device *connector.Device, connManager *connector.SSHConnectionManager) (*rpc.Client, error) {
-	conn, err := connManager.Connect(device)
+	conn, err := connManager.Connect(device, cfg.Features.Netconf)
 	if err != nil {
 		return nil, err
 	}
@@ -114,6 +114,10 @@ func clientForDevice(device *connector.Device, connManager *connector.SSHConnect
 
 	if cfg.Features.Satellite {
 		opts = append(opts, rpc.WithSatellite())
+	}
+
+	if cfg.Features.Netconf {
+		opts = append(opts, rpc.WithNetconf())
 	}
 
 	c := rpc.NewClient(conn, opts...)

@@ -5,11 +5,7 @@ package routingengine
 import "encoding/xml"
 
 type multiEngineResult struct {
-	XMLName xml.Name       `xml:"rpc-reply"`
-	Results routingEngines `xml:"multi-routing-engine-results"`
-}
-
-type routingEngines struct {
+	XMLName xml.Name `xml:"multi-routing-engine-results"`
 	RoutingEngines []routingEngine `xml:"multi-routing-engine-item"`
 }
 

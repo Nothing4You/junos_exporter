@@ -140,6 +140,11 @@ func (cta *clientTracingAdapter) IsSatelliteEnabled() bool {
 	return cta.cl.IsSatelliteEnabled()
 }
 
+// IsNetconfEnabled implements IsNetconfEnabled of the collector.Client interface
+func (cta *clientTracingAdapter) IsNetconfEnabled() bool {
+	return cta.cl.IsNetconfEnabled()
+}
+
 // Device implements Device of the collector.Client interface
 func (cta *clientTracingAdapter) Device() *connector.Device {
 	return cta.cl.Device()

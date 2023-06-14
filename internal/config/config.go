@@ -33,6 +33,7 @@ type DeviceConfig struct {
 
 // FeatureConfig is the list of collectors enabled or disabled
 type FeatureConfig struct {
+	Netconf             bool `yaml:"netconf,omitempty`
 	Alarm               bool `yaml:"alarm,omitempty"`
 	Environment         bool `yaml:"environment,omitempty"`
 	BFD                 bool `yaml:"bfd,omitempty"`
@@ -108,6 +109,7 @@ func setDefaultValues(c *Config) {
 	c.LSEnabled = false
 	c.IfDescReg = ""
 	f := &c.Features
+	f.Netconf = false
 	f.Alarm = true
 	f.BGP = true
 	f.Environment = true
