@@ -3,6 +3,8 @@
 package bgp
 
 import (
+	"bytes"
+	"encoding/xml"
 	"math"
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
@@ -86,18 +88,31 @@ func (c *bgpCollector) Collect(client collector.Client, ch chan<- prometheus.Met
 
 func (c *bgpCollector) collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var x = result{}
-	var cmd strings.Builder
-	cmd.WriteString("show bgp neighbor")
-	if c.LogicalSystem != "" {
-		cmd.WriteString(" logical-system " + c.LogicalSystem)
+
+	var cmd string
+
+	if c.LogicalSystem == "" {
+		if client.IsNetconfEnabled() {
+			cmd = "<get-bgp-neighbor-information></get-bgp-neighbor-information>"
+		} else {
+			cmd = "show bgp neighbor"
+		}
+	} else {
+		if client.IsNetconfEnabled() {
+			var buf bytes.Buffer
+			xml.EscapeText(&buf, []byte(c.LogicalSystem))
+			cmd = "<get-bgp-neighbor-information><logical-system>" + buf.String() + "</logical-system></get-bgp-neighbor-information>"
+		} else {
+			cmd = "show bgp neighbor logical-system" + c.LogicalSystem
+		}
 	}
 
-	err := client.RunCommandAndParse(cmd.String(), &x)
+	err := client.RunCommandAndParse(cmd, &x)
 	if err != nil {
 		return err
 	}
 
-	for _, peer := range x.Information.Peers {
+	for _, peer := range x.Peers {
 		c.collectForPeer(peer, ch, labelValues)
 	}
 

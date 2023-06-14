@@ -2,10 +2,13 @@
 
 package bgp
 
+import (
+	"encoding/xml"
+)
+
 type result struct {
-	Information struct {
-		Peers []peer `xml:"bgp-peer"`
-	} `xml:"bgp-information"`
+	XMLName xml.Name `xml:"bgp-information"`
+	Peers []peer `xml:"bgp-peer"`
 }
 
 type peer struct {
