@@ -86,7 +86,7 @@ func (m *SSHConnectionManager) lockForDevice(device *Device) *sync.Mutex {
 }
 
 // Connect connects to a device or returns an long living connection
-func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
+func (m *SSHConnectionManager) Connect(device *Device, netconf bool) (*SSHConnection, error) {
 	if connection, found := m.connections[device.Host]; found {
 		if connection.isConnected() {
 			return connection, nil
@@ -103,10 +103,10 @@ func (m *SSHConnectionManager) Connect(device *Device) (*SSHConnection, error) {
 		}
 	}
 
-	return m.connect(device)
+	return m.connect(device, netconf)
 }
 
-func (m *SSHConnectionManager) connect(device *Device) (*SSHConnection, error) {
+func (m *SSHConnectionManager) connect(device *Device, netconf bool) (*SSHConnection, error) {
 	client, conn, err := m.connectToDevice(device)
 	if err != nil {
 		return nil, err
@@ -117,6 +117,7 @@ func (m *SSHConnectionManager) connect(device *Device) (*SSHConnection, error) {
 		client: client,
 		device: device,
 		done:   make(chan struct{}),
+		netconf: netconf,
 	}
 	go m.keepAlive(c)
 

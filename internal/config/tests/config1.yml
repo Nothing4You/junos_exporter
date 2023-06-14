@@ -3,6 +3,7 @@ targets:
   - router2
 
 features:
+  netconf: true
   bgp: true
   ospf: false
   isis: true

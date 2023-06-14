@@ -49,12 +49,17 @@ type interfaceLabel struct {
 // CollectDescriptions collects labels from descriptions
 func (l *DynamicLabels) CollectDescriptions(device *connector.Device, client collector.Client, ifDescReg *regexp.Regexp) error {
 	r := &result{}
-	err := client.RunCommandAndParse("show interfaces descriptions", r)
+	var err error
+	if (client.IsNetconfEnabled()) {
+		err = client.RunCommandAndParse("<get-interface-information><descriptions/></get-interface-information>", r)
+	} else {
+		err = client.RunCommandAndParse("show interfaces descriptions", r)
+	}
 	if err != nil {
 		return errors.Wrap(err, "could not retrieve interface descriptions for "+device.Host)
 	}
 
-	l.parseDescriptions(device, r.Information.Interfaces, ifDescReg)
+	l.parseDescriptions(device, r.Interfaces, ifDescReg)
 
 	return nil
 }

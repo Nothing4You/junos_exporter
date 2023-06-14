@@ -27,6 +27,7 @@ func TestShouldParse(t *testing.T) {
 		t.Fatalf("expected targets %v, got %v", et, c.Targets)
 	}
 
+	assertFeature("Netconf", c.Features.Netconf, true, t)
 	assertFeature("BGP", c.Features.BGP, true, t)
 	assertFeature("OSPF", c.Features.OSPF, false, t)
 	assertFeature("ISIS", c.Features.ISIS, true, t)
@@ -54,6 +55,7 @@ func TestShouldUseDefaults(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	assertFeature("Netconf", c.Features.Netconf, false, t)
 	assertFeature("BGP", c.Features.BGP, true, t)
 	assertFeature("OSPF", c.Features.OSPF, true, t)
 	assertFeature("ISIS", c.Features.ISIS, true, t)

@@ -4,6 +4,9 @@ package connector
 
 import (
 	"bytes"
+	"context"
+	"fmt"
+	"io"
 	"net"
 	"sync"
 	"time"
@@ -11,6 +14,9 @@ import (
 	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/ssh"
+
+	"github.com/nemith/netconf"
+	ncssh "github.com/nemith/netconf/transport/ssh"
 )
 
 // SSHConnection encapsulates the connection to the device
@@ -21,10 +27,20 @@ type SSHConnection struct {
 	lastUsed time.Time
 	mu       sync.Mutex
 	done     chan struct{}
+	netconf bool
+	netconfsession *netconf.Session
 }
 
 // RunCommand runs a command against the device
 func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
+	if c.netconf	{
+		return c.RunCommandNetconf(cmd)
+	} else {
+		return c.RunCommandSSH(cmd)
+	}
+}
+
+func (c *SSHConnection) RunCommandSSH(cmd string) ([]byte, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -49,6 +65,48 @@ func (c *SSHConnection) RunCommand(cmd string) ([]byte, error) {
 	}
 
 	return b.Bytes(), nil
+}
+
+func (c *SSHConnection) RunCommandNetconf(cmd string) ([]byte, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	var err error
+
+	if c.client == nil {
+		return nil, errors.New("not connected")
+	}
+
+	if c.netconfsession == nil {
+		t, err := ncssh.NewTransport(c.client)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "could not create netconf transport")
+		}
+
+		c.netconfsession, err = netconf.Open(t)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "could not open netconf session")
+		}
+	}
+
+	msg := &netconf.RPCMsg{
+		Operation: cmd,
+	}
+
+	reply, err := c.netconfsession.Do(context.TODO(), msg)
+
+	if err != nil {
+		if err == io.EOF {
+			//probably lost the session, closing to force a reopen
+			fmt.Println("Error - Closing")
+			c.netconfsession.Close(context.TODO())
+			c.netconfsession = nil
+		}
+		return nil, errors.Wrap(err, "could not run command")
+	}
+
+	return reply.Body, nil
 }
 
 func (c *SSHConnection) isConnected() bool {

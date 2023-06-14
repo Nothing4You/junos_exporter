@@ -5,11 +5,7 @@ package routingengine
 import "encoding/xml"
 
 type multiEngineResult struct {
-	XMLName xml.Name       `xml:"rpc-reply"`
-	Results routingEngines `xml:"multi-routing-engine-results"`
-}
-
-type routingEngines struct {
+	XMLName xml.Name `xml:"multi-routing-engine-results"`
 	RoutingEngines []routingEngine `xml:"multi-routing-engine-item"`
 }
 
@@ -19,6 +15,7 @@ type routingEngine struct {
 }
 
 type routeEngines struct {
+	XMLName xml.Name `xml:"route-engine-information"`
 	RouteEngines []routeEngine `xml:"route-engine"`
 }
 
@@ -67,9 +64,4 @@ type routeEngine struct {
 
 type temperatureValue struct {
 	Value float64 `xml:"celsius,attr"`
-}
-
-type singleRoutingEngineResult struct {
-	XMLName     xml.Name     `xml:"rpc-reply"`
-	Information routeEngines `xml:"route-engine-information"`
 }
